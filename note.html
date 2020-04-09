@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+<style>
+.container-lg{
+}
+.flex {
+display: flex;
+padding-right: 18rem;
+}
+.space {
+flex-grow: 1;
+}
+h5 {
+margin-left:5rem;
+}
+h3 {
+margin-left:1rem;
+padding-top:1.7rem;
+}
+h4 {
+padding-top:1rem;
+}
+.box {
+background-color: greenyellow;
+width: 22rem;
+height: 7rem;
+text-align: center;
+margin:-5rem 8rem;
+border-radius: 8px;
+transition: opacity 3s ease;
+position: absolute;
+}
+.new{
+margin-left:18.4rem;
+padding-top:2rem;
+}
+.col-md-2{
+background-color:green;
+height:100%;
+}
+.col-md-8{
+background-color:pink;
+height:100%;
+}
+</style>
+</head>
+<body>
+<div id='app'>
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-2" >
+</div>
+<div class="col-md-8" >
+<add-user   @add="addNewUser"  ></add-user>
+<user v-for="(user, index) in users" @save="changeCat(index)"
+:key="`user${index}`"
+:user.sync="users[index]"
+:key="index"
+:user="user"
+:index="index"
+v-on:userdelete="remove"
+></user> 
+</div>
+<div class="col-md-2" >
+</div>
+</div>
+</div>
+</div>
+<script>
+Vue.component('user', {
+props: ['user','index',"newTaskName",'visible'],
+data: function () {
+return {
+user: { newTaskName:null}
+}
+},
+template: `<div><table><tr ><td width="40%" >
+<h3>{{index + 1}}. {{user.name}} </td>
+<td width="35%">
+<button type="button" class="btn btn-warning"    v-on:click="userChange(index)">
+<a href="https://changenote.glitch.me/">Перейти к изменению заметки</a>
+</button>	
+</td>
+<td width="2%"></td>
+<td width="25%" >
+<button type="button" class="btn btn-success" @click="visible=!visible"
+>{{visible?'Отменить удаление':'Удалить заметку'}}</button>
+</td>
+</tr>
+</table>
+<div v-if="!visible"></div>
+<div v-else>
+<div class="box">
+<h4>Удалить заметку?</h4>
+<button type="submit" class="btn btn-primary" @click="userDelete(index)" @click="visible=!visible">Да</button>
+<button type="submit" class="btn btn-success" @click="visible=!visible">Нет</button>
+</div>
+</div>
+</h3>
+<div class="todoItem" v-for="(todo, i) in user.todos" :key="todo.id" class="flex">
+<h5>
+<!--edit -->
+<del v-if="todo.done">{{i+1 }}.{{ todo.taskName }}</del>
+<span  v-else @click="todo.edit = true;" v-on:click="removeTodo(todo.id)"> {{i+1 }}.{{todo.taskName}} </span><!--edit -->
+<div class="space"></div>
+</div>`,
+methods: {
+userDelete: function(index){
+this.$emit('userdelete', index);  
+}
+}
+});
+this.ert='';
+Vue.component('add-user',{ 
+props:['name','user', "index"], 
+data: function(){
+return{
+user: {name:null}
+}},   
+template:`<div><h4>ПРИЛОЖЕНИЕ ДЛЯ ЗАМЕТОК</h4>
+<div class="new"> 
+<button type="button" class="btn btn-danger" @click.prevent="add" :disabled="!name" >
+ПЕРЕЙТИ К СОЗДАНИЮ НОВОЙ ЗАМЕТКИ
+</button>
+</div></div>`,
+methods: {
+add() {
+const newUser = {
+name: this.name,
+todos: []
+};
+this.name = null;
+this.$emit("add", newUser);
+}
+},
+});
+new Vue({
+el: "#app",
+data: {
+users:[
+{name: 'Изучить VUE.JS', todos: [{taskName: "Сделать задание", edit: false, done: false }, {taskName: "Прочесть документацию", edit: false}]},
+{name: 'Изучить JS', todos: [{taskName: "Изучить теорию" ,edit: false}, {taskName: "Рассмотреть примеры", edit: false}]}
+],
+newTaskName: null,
+user:{},
+visible: false
+},
+mounted() {
+if (localStorage.getItem('users')) {
+try {
+this.users = JSON.parse(localStorage.getItem('users'));
+} catch(e) {
+localStorage.changeCat('users')
+}
+}
+},
+methods: {
+remove: function(index){
+this.users.splice(index, 1) 
+this.saveUsers();       
+},
+saveUsers() {
+const parsed = JSON.stringify(this.users);
+localStorage.setItem('users', parsed); 
+}
+}
+});
+</script>
+</body>
+</html>
+    
+  
