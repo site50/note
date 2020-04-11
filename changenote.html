@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+<style>
+.container-lg{
+background-color: orange;
+width:40rem;
+margin-top:2rem;
+}
+.flex {
+display: flex;
+padding-right: 18rem;
+}
+.space {
+flex-grow: 1;
+}
+. modal {
+background-color: greenyellow;
+}
+h5 {
+margin-left:5rem;
+}
+h3 {
+margin-left:1rem;
+padding-top:1.7rem;
+}
+h4 {
+padding-top:1rem;
+}
+.task{
+margin-left:8.5rem;
+padding-top:0.4rem;
+}
+.box {
+background-color: greenyellow;
+width: 22rem;
+height: 7rem;
+text-align: center;
+margin:-5rem 8rem;
+border-radius: 8px;
+transition: opacity 3s ease;
+position: absolute;
+}
+.new{
+margin-left:8.7rem;
+padding-top:0.5rem;
+}
+.change{
+margin-right:15rem;
+padding-top:1rem;
+}
+.tx{
+margin:1rem 6rem;}
+</style>
+</head>
+<body>
+<div id='app'>
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-6" style="background-color:pink;">
+<div class="tx"><h4>СПИСОК ЗАМЕТОК И ЗАДАЧ К НИМ</h4></div>
+<add-user   @add="addNewUser"  ></add-user>
+<user v-for="(user, index) in users" @save="changeCat(index)"
+:key="`user${index}`"
+:user.sync="users[index]"
+:key="index"
+:user="user"
+:index="index"
+v-on:userdelete="remove"
+v-on:userchange="change"
+></user> 
+</div>
+<div class="col-md-6" style="background-color:green;">
+<change  :user="user"></change>
+<reset :user="user" @userreset="reset"></reset>
+<combak :user="user" @usercombak="combak"></combak>
+</div>
+</div>
+</div>
+</div>
+<script>
+Vue.component('user', {
+props: ['user','index',"newTaskName",'visible'],
+data: function () {
+return {
+user: { newTaskName:null}
+}
+},
+template: `<div>
+<table><tr><td width="50%">
+<h3>{{index + 1}}. {{user.name}} </td>
+<td width="25%">
+<button type="button" class="btn btn-primary"    v-on:click="userChange(index)">Изменить заметку</button>	
+</td>
+<td width="2%"></td>
+<td width="25%">
+<button type="button" class="btn btn-success" @click="visible=!visible"
+>{{visible?'Отменить удаление':'Удалить заметку'}}</button>
+</td>
+</tr>
+</table>
+<div v-if="!visible"></div>
+<div v-else>
+<div class="box">
+<h4>Удалить заметку?</h4>
+<button type="submit" class="btn btn-primary" @click="userDelete(index)" @click="visible=!visible">Да</button>
+<button type="submit" class="btn btn-success" @click="visible=!visible">Нет</button>
+</div>
+</div>
+</h3>
+<div class="todoItem" v-for="(todo, i) in user.todos" :key="todo.id" class="flex">
+<h5>
+<input type="checkbox"  v-model="todo.done">
+<input 
+v-if="todo.edit"
+v-model="todo.taskName" 
+@blur="todo.edit = false; "
+>                                                          <!--edit -->
+<del v-if="todo.done">{{i+1 }}.{{ todo.taskName }}</del>
+<span  v-else @click="todo.edit = true;" v-on:click="removeTodo(todo.id)"> {{i+1 }}.{{todo.taskName}} </span><!--edit -->
+<div class="space"></div>
+</h5></div>	
+<div class="task">
+<input placeholder="Новая задача" @blur="todo.edit = false; "v-model="newTaskName" >
+<button type="button" class="btn btn-warning" @click.prevent="addNewTask" :disabled="!newTaskName">Добавить новую задачу к заметке</button>
+</div>
+</div>`,
+methods: {
+removeTodo(id) {
+this.todos = this.todos.filter(todo => todo.id !== id);
+this.saveUsers();  
+},
+addNewTask() {
+let newUserObject = JSON.parse(JSON.stringify(this.user));
+newUserObject.todos.push({
+taskName: this.newTaskName, edit: false
+});
+this.$emit("update:user", newUserObject);
+this.saveUsers();  
+this.newTaskName = null;
+},
+userDelete: function(index){
+this.$emit('userdelete', index);  
+},
+userChange: function(index){
+this.$emit('userchange', index);
+}
+}
+});
+Vue.component('change', {
+props: ["user", "index"],
+template: `<div>
+<div class="change"><h5>Изменить заметку: <input type="text" style="width:33rem;" v-model="user.name" /> После измения заметки,нажмите кнопку изменить заметку </h5></div>
+</div>`,
+});
+this.ert='';
+Vue.component('add-user',{ 
+props:['name','user', "index"], 
+data: function(){
+return{
+user: {name:null}
+}},   
+template:`<div>
+<div class="new"> <input placeholder="Новая заметка" v-model.trim="name">
+<button type="button" class="btn btn-danger" @click.prevent="add" :disabled="!name">Добавить новую заметку</button>
+</div></div>`,
+methods: {
+add() {
+const newUser = {
+name: this.name,
+todos: []
+};
+this.name = null;
+this.$emit("add", newUser);
+}
+},
+});
+Vue.component('reset', { 
+props: ["user"],
+template: `<div><button class="btn btn-warning" style="margin:1.3rem 11rem;" @click="reset">Сбросить изменения</button></div>`,
+methods:{
+reset(){
+this.$emit("userreset");
+}
+}
+});
+Vue.component('combak', { 
+props: ["user"],
+template: `<div><button class="btn btn-warning"style="margin:1.3rem 11rem;" @click="combak">Отменить изменения</button></p>
+<button type="button" class="btn btn-primary btn-lg btn-block"  @click="save">СОХРАНИТЬ ВСЕ ИЗМЕНЕНИЯ</button>
+<h6>1.Чтобы изменить заметку, нажмите на кнопку "изменить заметку", затем в поле "изменить заметку" введите новую заметку и сохраните,
+нажав снова кнопку "изменить заметку".</h6>
+<h6>2.Чтобы изменить задачу к заметке, щелкните на задачу двойным щелчком и начинайте изменять ее, затем щелкните на область вне 
+задачи и нажмите кнопку "сохранить все изменения".</h6>
+<h6>3.Чтобы сохранить все внесенные изменения, нажмите кнопку "сохранить все изменения". </h6>
+<button class="btn btn-warning" style="margin:1.3rem 11rem;" @click="reset"><a href="https://homenote.glitch.me">
+ВЕРНУТЬСЯ НА ГЛАВНУЮ</a></button>
+</div>`,
+methods:{
+combak(){
+this.$emit("usercombak");
+},
+save(){
+this.$emit("usercombak");
+}
+}
+});
+new Vue({
+el: "#app",
+data: {
+users:[
+{name: 'Изучить VUE.JS', todos: [{taskName: "Сделать задание", edit: false, done: false }, {taskName: "Прочесть документацию", edit: false}]},
+{name: 'Изучить JS', todos: [{taskName: "Изучить теорию" ,edit: false}, {taskName: "Рассмотреть примеры", edit: false}]}
+],
+newTaskName: null,
+user:{},
+visible: false
+},
+mounted() {
+if (localStorage.getItem('users')) {
+try {
+this.users = JSON.parse(localStorage.getItem('users'));
+} catch(e) {
+localStorage.changeCat('users')
+}
+}
+},
+methods: {
+addNewUser(newUser) {
+this.users.push(newUser);
+},
+remove: function(index){
+this.users.splice(index, 1) 
+this.saveUsers();       
+}
+,
+change: function(index){
+this.user = this.users[index];
+ert=this.user.name;
+this.saveUsers();
+},
+reset(){
+this.user.name = '';
+this.saveUsers();
+},
+combak(){			
+this.user.name = ert;	
+this.saveUsers();
+},
+saveUsers() {
+const parsed = JSON.stringify(this.users);
+localStorage.setItem('users', parsed); 
+}
+}
+});
+</script>
+</body>
+</html>
