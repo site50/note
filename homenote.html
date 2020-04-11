@@ -51,6 +51,11 @@ height:100%;
 <body>
 <div id='app'>
 <div class="container-fluid">
+ <div class="row">
+<div class="col-md-12" style="text-align:center">
+<h4>ПРИЛОЖЕНИЕ ДЛЯ ЗАМЕТОК</h4>
+</div>
+</div>
 <div class="row">
 <div class="col-md-2" >
 </div>
@@ -121,7 +126,7 @@ data: function(){
 return{
 user: {name:null}
 }},   
-template:`<div><h4>ПРИЛОЖЕНИЕ ДЛЯ ЗАМЕТОК</h4>
+template:`<div>
 <div class="new"> 
 <button type="button" class="btn btn-danger" @click.prevent="add" :disabled="!name" >
 <a href="https://site50.github.io/note/changenote.html">
